@@ -83,6 +83,11 @@ dependencies.
 - Note anything you could not verify. "Tested on macOS, not on Windows" is
   useful; silence is not.
 
+## Licensing of contributions
+
+The project is GPL-3.0-or-later. By opening a pull request you agree your
+contribution ships under that licence.
+
 ## Reporting security issues
 
 Do not open a public issue. See [SECURITY.md](SECURITY.md).

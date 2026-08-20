@@ -41,7 +41,7 @@
     "category": "Utility",
     "shortDescription": "Markdown viewer",
     "longDescription": "A fast, private, open-source Markdown viewer. Renders GitHub-flavored Markdown, reloads on change, and never touches the network.",
-    "copyright": "MIT licensed",
+    "copyright": "Copyright (c) 2026 Ruby Perez. GPL-3.0-or-later.",
     "publisher": "Parchment contributors",
     "icon": [
       "icons/32x32.png",

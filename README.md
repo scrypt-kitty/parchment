@@ -6,7 +6,7 @@ Open a `.md` file and read it. That's the whole product. No editor, no account,
 no sync, no telemetry — and unlike the closed-source viewers in this category,
 you can read every line that runs on your machine.
 
-![MIT licensed](https://img.shields.io/badge/license-MIT-blue)
+![GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)
 
 ## Install
 
@@ -167,4 +167,8 @@ and `cargo clippy -D warnings`.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+GPL-3.0-or-later. See [LICENSE](LICENSE).
+
+Copyleft is deliberate. This exists because the good Markdown viewers are
+closed-source; a licence that let someone take it and close it again would
+defeat the point. Fork it, change it, ship it — just keep it open.

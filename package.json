@@ -2,7 +2,7 @@
   "name": "parchment",
   "version": "1.0.0",
   "description": "A fast, private, open-source Markdown viewer for macOS, Windows, and Linux",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/scrypt-kitty/parchment.git"
