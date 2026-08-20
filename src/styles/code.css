@@ -1,0 +1,109 @@
+/* highlight.js token colors using GitHub's syntax palette.
+   One set of rules; the two themes only swap the variables. */
+
+:root {
+  --syn-comment: #59636e;
+  --syn-keyword: #cf222e;
+  --syn-entity: #8250df;
+  --syn-constant: #0550ae;
+  --syn-string: #0a3069;
+  --syn-variable: #953800;
+  --syn-tag: #116329;
+  --syn-meta: #0550ae;
+  --syn-add-fg: #116329;
+  --syn-add-bg: #dafbe1;
+  --syn-del-fg: #82071e;
+  --syn-del-bg: #ffebe9;
+}
+
+:root[data-theme="dark"] {
+  --syn-comment: #9198a1;
+  --syn-keyword: #ff7b72;
+  --syn-entity: #d2a8ff;
+  --syn-constant: #79c0ff;
+  --syn-string: #a5d6ff;
+  --syn-variable: #ffa657;
+  --syn-tag: #7ee787;
+  --syn-meta: #79c0ff;
+  --syn-add-fg: #aff5b4;
+  --syn-add-bg: #033a16;
+  --syn-del-fg: #ffdcd7;
+  --syn-del-bg: #67060c;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: var(--syn-comment);
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-doctag,
+.hljs-formula {
+  color: var(--syn-keyword);
+}
+
+.hljs-title,
+.hljs-title.class_,
+.hljs-title.function_,
+.hljs-section,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: var(--syn-entity);
+}
+
+.hljs-number,
+.hljs-attr,
+.hljs-attribute,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-selector-attr,
+.hljs-selector-pseudo {
+  color: var(--syn-constant);
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-meta .hljs-string {
+  color: var(--syn-string);
+}
+
+.hljs-built_in,
+.hljs-type,
+.hljs-class .hljs-title,
+.hljs-params {
+  color: var(--syn-variable);
+}
+
+.hljs-tag {
+  color: var(--syn-tag);
+}
+
+.hljs-meta,
+.hljs-meta .hljs-keyword {
+  color: var(--syn-meta);
+}
+
+.hljs-addition {
+  color: var(--syn-add-fg);
+  background: var(--syn-add-bg);
+}
+
+.hljs-deletion {
+  color: var(--syn-del-fg);
+  background: var(--syn-del-bg);
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: 600;
+}

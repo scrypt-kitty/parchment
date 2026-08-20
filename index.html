@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" data-theme="system">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parchment</title>
+  </head>
+  <body>
+    <div id="app">
+      <aside id="toc" hidden>
+        <div class="toc-head">Contents</div>
+        <nav id="toc-list"></nav>
+      </aside>
+
+      <main id="main">
+        <div id="findbar" hidden>
+          <input
+            id="find-input"
+            type="text"
+            placeholder="Find in document"
+            spellcheck="false"
+            autocomplete="off"
+          />
+          <span id="find-count">0/0</span>
+          <button id="find-prev" title="Previous match (Shift+Enter)">&#8593;</button>
+          <button id="find-next" title="Next match (Enter)">&#8595;</button>
+          <button id="find-close" title="Close (Esc)">&#10005;</button>
+        </div>
+
+        <div id="scroller">
+          <article id="doc" class="markdown-body" hidden></article>
+          <section id="empty">
+            <div class="empty-art" aria-hidden="true">&#9634;</div>
+            <h1>Parchment</h1>
+            <p>Drop a Markdown file here, or press <kbd>&#8984;O</kbd> to open one.</p>
+          </section>
+        </div>
+      </main>
+
+      <div id="drop-overlay" hidden><span>Drop to open</span></div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
