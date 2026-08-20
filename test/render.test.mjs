@@ -1,24 +1,22 @@
 /**
  * Renderer tests.
  *
- * `render.ts` is browser code, so it is bundled with esbuild and executed
- * against a jsdom document. Tauri's `convertFileSrc` delegates to an injected
- * global, which is stubbed here with the same URL shape the real webview
- * produces.
+ * `render.ts` is browser code, so it runs against a jsdom document. Node 22
+ * strips the TypeScript types on import, so the source is loaded directly —
+ * no bundling step, which means coverage maps straight onto src/render.ts.
+ *
+ * Tauri's `convertFileSrc` delegates to an injected global, stubbed here with
+ * the same URL shape the real webview produces.
  */
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { pathToFileURL } from "node:url";
 
-import { build } from "esbuild";
 import { JSDOM } from "jsdom";
 
-// A hand-rolled runner rather than node:test. The renderer has to be bundled
-// and given a DOM before any test can run, and node:test on Node 18 silently
-// drops every suite registered after a top-level await — which quietly reduced
-// this file to four of its tests. Twenty lines of runner is worth the certainty.
+// A hand-rolled runner rather than node:test: the renderer needs a DOM in place
+// before any test runs, and node:test quietly drops suites registered after a
+// top-level await on some Node versions — which once reduced this file to four
+// of its tests while still reporting success. Twenty lines is worth the
+// certainty, and it prints its own totals so a silent drop cannot recur.
 const suites = [];
 let current = null;
 
@@ -31,36 +29,24 @@ function describe(name, body) {
 function test(name, body) {
   current.tests.push({ name, body });
 }
-const { render } = await (async () => {
-  const dom = new JSDOM("<!doctype html><html><body></body></html>", {
-    url: "http://localhost/",
-  });
 
-  globalThis.window = dom.window;
-  globalThis.document = dom.window.document;
-  globalThis.Node = dom.window.Node;
-  globalThis.NodeFilter = dom.window.NodeFilter;
-  globalThis.HTMLElement = dom.window.HTMLElement;
-  globalThis.DocumentFragment = dom.window.DocumentFragment;
-  globalThis.trustedTypes = undefined;
+const dom = new JSDOM("<!doctype html><html><body></body></html>", {
+  url: "http://localhost/",
+});
 
-  dom.window.__TAURI_INTERNALS__ = {
-    convertFileSrc: (path, scheme) => `${scheme}://localhost/${encodeURIComponent(path)}`,
-  };
+globalThis.window = dom.window;
+globalThis.document = dom.window.document;
+globalThis.Node = dom.window.Node;
+globalThis.NodeFilter = dom.window.NodeFilter;
+globalThis.HTMLElement = dom.window.HTMLElement;
+globalThis.DocumentFragment = dom.window.DocumentFragment;
+globalThis.trustedTypes = undefined;
 
-  const bundle = await build({
-    entryPoints: [join(process.cwd(), "src/render.ts")],
-    bundle: true,
-    format: "esm",
-    platform: "browser",
-    write: false,
-    logLevel: "silent",
-  });
+dom.window.__TAURI_INTERNALS__ = {
+  convertFileSrc: (path, scheme) => `${scheme}://localhost/${encodeURIComponent(path)}`,
+};
 
-  const file = join(mkdtempSync(join(tmpdir(), "parchment-test-")), "render.mjs");
-  writeFileSync(file, bundle.outputFiles[0].text);
-  return import(pathToFileURL(file).href);
-})();
+const { render } = await import("../src/render.ts");
 
 const html = (source, dir = "/docs") => render(source, dir).html;
 

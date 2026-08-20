@@ -13,6 +13,9 @@
   "homepage": "https://github.com/scrypt-kitty/parchment#readme",
   "type": "module",
   "private": true,
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
@@ -20,7 +23,10 @@
     "tauri": "tauri",
     "start": "tauri dev",
     "bundle": "tauri build",
-    "test": "node test/render.test.mjs"
+    "test": "node test/render.test.mjs",
+    "test:coverage": "c8 --reporter=text --reporter=lcov --include='src/**' --check-coverage --lines 95 --functions 95 --branches 80 node test/render.test.mjs",
+    "validate": "npm run test:coverage && tsc --noEmit && npm run lint:rust",
+    "lint:rust": "cargo fmt --manifest-path src-tauri/Cargo.toml --check && cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
@@ -35,9 +41,9 @@
   "devDependencies": {
     "@tauri-apps/cli": "^2",
     "@types/markdown-it": "^14.1.2",
-    "esbuild": "^0.28.1",
+    "c8": "^12.0.0",
     "jsdom": "^25.0.1",
     "typescript": "^5.7.3",
-    "vite": "^5.4.14"
+    "vite": "^8.2.2"
   }
 }
