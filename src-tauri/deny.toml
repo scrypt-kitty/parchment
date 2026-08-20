@@ -39,6 +39,13 @@ allow = [
 ]
 confidence-threshold = 0.8
 
+# Parchment itself is GPL-3.0-or-later. The allow-list above governs
+# *dependencies* — a copyleft dependency would still be a problem, because it
+# would constrain how the combined work can be relicensed later.
+[[licenses.exceptions]]
+name = "parchment"
+allow = ["GPL-3.0-or-later"]
+
 [bans]
 # Duplicate major versions bloat the binary and multiply the patch surface,
 # but Tauri's tree legitimately carries a few, so this warns rather than fails.

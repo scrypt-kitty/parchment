@@ -69,7 +69,7 @@ pub fn install<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
             name: Some("Parchment".into()),
             version: Some(env!("CARGO_PKG_VERSION").into()),
             comments: Some("A fast, private, open-source Markdown viewer.".into()),
-            license: Some("MIT".into()),
+            license: Some("GPL-3.0-or-later".into()),
             website: Some(env!("CARGO_PKG_REPOSITORY").into()),
             ..Default::default()
         };
@@ -99,7 +99,7 @@ pub fn install<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
         let about = AboutMetadata {
             name: Some("Parchment".into()),
             version: Some(env!("CARGO_PKG_VERSION").into()),
-            license: Some("MIT".into()),
+            license: Some("GPL-3.0-or-later".into()),
             ..Default::default()
         };
         SubmenuBuilder::new(app, "Help")
