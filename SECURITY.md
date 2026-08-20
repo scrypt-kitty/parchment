@@ -45,6 +45,14 @@ Those are real bugs. Please report them.
   configured to fail on vulnerabilities and on unmaintained crates that this
   project chooses directly, and to report the rest without failing. See
   [`src-tauri/deny.toml`](src-tauri/deny.toml).
+
+- **RUSTSEC-2024-0429, unsoundness in `glib::VariantStrIter`.** Reaches the tree
+  as `tauri → gtk 0.18 → atk → glib 0.18.5`, and only on Linux — glib does not
+  appear in the macOS or Windows dependency graphs at all. The fix is glib 0.20,
+  which requires gtk-rs 0.20 and therefore an upstream Tauri release; it cannot
+  be applied from this repository. The Dependabot alert is dismissed as
+  tolerable risk with that reasoning recorded, and will resolve on its own when
+  Tauri moves to gtk-rs 0.20.
 - **Development-tooling advisories.** Vite, its dev server, and the test
   toolchain do not ship inside the app. Of the npm packages in the tree, 18 are
   bundled into the released binary and the rest are build-time only. CI holds
