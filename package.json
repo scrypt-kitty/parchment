@@ -42,7 +42,7 @@
     "@tauri-apps/cli": "^2",
     "@types/markdown-it": "^14.1.2",
     "c8": "^12.0.0",
-    "jsdom": "^25.0.1",
+    "jsdom": "^30.0.1",
     "typescript": "^5.7.3",
     "vite": "^8.2.2"
   }
