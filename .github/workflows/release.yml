@@ -44,7 +44,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - uses: dtolnay/rust-toolchain@stable
@@ -64,15 +64,12 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Optional. Populate these to ship signed, notarized macOS builds.
-          # Without them the workflow still produces working unsigned artifacts,
-          # which users must clear past Gatekeeper by hand — see the README.
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # NOTE: the APPLE_* signing variables are deliberately absent.
+          # tauri-action treats them as "sign this build" whenever they are
+          # defined at all — even as empty strings — and then dies on
+          # `security import` with no certificate to import. Releases are
+          # unsigned (see the README); to start signing, add the six APPLE_*
+          # secrets to the repository and reinstate them here in one block.
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Parchment ${{ github.ref_name }}

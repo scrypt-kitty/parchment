@@ -103,7 +103,7 @@ own directory, so a hostile Markdown file cannot read the rest of your disk.
 
 ## Building
 
-Requires [Node 18+](https://nodejs.org) and [Rust](https://rustup.rs).
+Requires [Node 20.19+ or 22+](https://nodejs.org) and [Rust](https://rustup.rs).
 
 ```sh
 npm install
@@ -143,6 +143,27 @@ CI workflow, which builds each target on its native runner.
 All rendering happens in the webview; all file and OS access happens in Rust.
 The two talk over a handful of commands and four events, which is the entire
 API surface between them.
+
+## Security
+
+Parchment renders Markdown you did not write, so the sanitizer is treated as
+load-bearing and is covered by tests that gate CI.
+
+Dependencies are scanned on every push and weekly on a schedule — npm
+advisories, the RustSec database, `cargo deny` for licences and crate sources,
+CodeQL, and secret scanning. Shipped dependencies are held to a stricter
+threshold than build tooling, because only 18 of the npm packages in the tree
+end up inside the released binary. Dependabot proposes updates weekly; patch and
+minor bumps auto-merge once checks pass, majors wait for a human.
+
+To report a vulnerability, see [SECURITY.md](SECURITY.md) — please email rather
+than opening a public issue.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). `npm run validate` runs everything CI
+checks: renderer tests with coverage thresholds, the type check, `cargo fmt`,
+and `cargo clippy -D warnings`.
 
 ## License
 

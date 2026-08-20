@@ -1,0 +1,40 @@
+version: 2
+
+updates:
+  # npm — grouped so a week's patches arrive as one reviewable PR rather than
+  # a dozen. Runtime dependencies ship inside the app and are kept separate
+  # from dev tooling, which never leaves this machine.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      runtime-patch:
+        dependency-type: production
+        update-types: [minor, patch]
+      dev-tooling:
+        dependency-type: development
+        update-types: [minor, patch]
+    labels: [dependencies, javascript]
+
+  - package-ecosystem: cargo
+    directory: /src-tauri
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      cargo-patch:
+        update-types: [minor, patch]
+    labels: [dependencies, rust]
+
+  # Pinned action versions rot quietly and are a supply-chain path in their
+  # own right.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies, ci]

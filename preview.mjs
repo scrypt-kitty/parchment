@@ -5,12 +5,10 @@
  *
  *   node preview.mjs <file.md> [out.html] [--dark]
  */
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { build } from "esbuild";
 import { JSDOM } from "jsdom";
 
 const [source, output = "preview.html"] = process.argv.slice(2).filter((a) => !a.startsWith("--"));
@@ -32,17 +30,7 @@ globalThis.DocumentFragment = dom.window.DocumentFragment;
 // paths instead of the app's custom scheme.
 dom.window.__TAURI_INTERNALS__ = { convertFileSrc: (path) => pathToFileURL(path).href };
 
-const bundle = await build({
-  entryPoints: ["src/render.ts"],
-  bundle: true,
-  format: "esm",
-  platform: "browser",
-  write: false,
-  logLevel: "silent",
-});
-const bundlePath = join(mkdtempSync(join(tmpdir(), "parchment-preview-")), "render.mjs");
-writeFileSync(bundlePath, bundle.outputFiles[0].text);
-const { render } = await import(pathToFileURL(bundlePath).href);
+const { render } = await import("./src/render.ts");
 
 const absolute = resolve(source);
 const { html } = render(readFileSync(absolute, "utf8"), dirname(absolute));
