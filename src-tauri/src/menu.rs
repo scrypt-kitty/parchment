@@ -62,12 +62,9 @@ pub fn install<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
         )?)
         .build()?;
 
-    let mut menu = MenuBuilder::new(app);
-
-    // The application menu is the first submenu on macOS and carries the
-    // standard About/Hide/Quit items the platform expects.
+    // Platform-specific submenus, each bound behind its own cfg.
     #[cfg(target_os = "macos")]
-    {
+    let app_menu = {
         let about = AboutMetadata {
             name: Some("Parchment".into()),
             version: Some(env!("CARGO_PKG_VERSION").into()),
@@ -76,7 +73,7 @@ pub fn install<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
             website: Some(env!("CARGO_PKG_REPOSITORY").into()),
             ..Default::default()
         };
-        let app_menu = SubmenuBuilder::new(app, "Parchment")
+        SubmenuBuilder::new(app, "Parchment")
             .item(&PredefinedMenuItem::about(
                 app,
                 Some("About Parchment"),
@@ -88,38 +85,43 @@ pub fn install<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
             .item(&PredefinedMenuItem::show_all(app, Some("Show All"))?)
             .separator()
             .item(&PredefinedMenuItem::quit(app, Some("Quit Parchment"))?)
-            .build()?;
-        menu = menu.item(&app_menu);
-    }
-
-    let mut menu = menu.item(&file).item(&edit).item(&view);
+            .build()?
+    };
 
     #[cfg(target_os = "macos")]
-    {
-        let window = SubmenuBuilder::new(app, "Window")
-            .item(&PredefinedMenuItem::minimize(app, Some("Minimize"))?)
-            .item(&PredefinedMenuItem::maximize(app, Some("Zoom"))?)
-            .build()?;
-        menu = menu.item(&window);
-    }
+    let window = SubmenuBuilder::new(app, "Window")
+        .item(&PredefinedMenuItem::minimize(app, Some("Minimize"))?)
+        .item(&PredefinedMenuItem::maximize(app, Some("Zoom"))?)
+        .build()?;
 
     #[cfg(not(target_os = "macos"))]
-    {
+    let help = {
         let about = AboutMetadata {
             name: Some("Parchment".into()),
             version: Some(env!("CARGO_PKG_VERSION").into()),
             license: Some("MIT".into()),
             ..Default::default()
         };
-        let help = SubmenuBuilder::new(app, "Help")
+        SubmenuBuilder::new(app, "Help")
             .item(&PredefinedMenuItem::about(
                 app,
                 Some("About Parchment"),
                 Some(about),
             )?)
-            .build()?;
-        menu = menu.item(&help);
-    }
+            .build()?
+    };
+
+    // Rebinding by shadowing rather than mutating: a `mut` builder would sit
+    // unmutated wherever the cfg'd branches are compiled out (`unused_mut` on
+    // Windows and Linux), and a Vec of pushes trips `vec_init_then_push`.
+    let menu = MenuBuilder::new(app);
+    #[cfg(target_os = "macos")]
+    let menu = menu.item(&app_menu);
+    let menu = menu.item(&file).item(&edit).item(&view);
+    #[cfg(target_os = "macos")]
+    let menu = menu.item(&window);
+    #[cfg(not(target_os = "macos"))]
+    let menu = menu.item(&help);
 
     app.set_menu(menu.build()?)?;
 
