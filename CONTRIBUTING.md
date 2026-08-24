@@ -83,6 +83,27 @@ dependencies.
 - Note anything you could not verify. "Tested on macOS, not on Windows" is
   useful; silence is not.
 
+## Releasing
+
+The version appears in four files that must agree. Don't edit them by hand —
+run the **Bump version** workflow from the Actions tab, which applies the bump
+everywhere and opens a PR.
+
+Once that PR is merged:
+
+```sh
+git checkout main && git pull
+git tag -a v1.2.3 -m "Parchment 1.2.3"
+git push origin v1.2.3
+```
+
+The tag triggers the release build for macOS (Apple Silicon and Intel), Windows,
+and Linux. It refuses to build if the tag and the committed version disagree, so
+a mismatched tag fails loudly instead of producing installers whose metadata
+contradicts the release they sit under.
+
+`scripts/check-versions.sh` runs the same check locally.
+
 ## Licensing of contributions
 
 The project is GPL-3.0-or-later. By opening a pull request you agree your

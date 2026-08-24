@@ -41,8 +41,33 @@ time:
   chmod +x parchment_*_amd64.AppImage
   ```
 
-If you would rather not trust a prebuilt binary, building from source takes two
-commands — see [Building](#building).
+### Verifying your download
+
+Every release carries a `SHA256SUMS` file and a signed build provenance
+attestation.
+
+Check the file arrived intact:
+
+```sh
+# Download SHA256SUMS from the release, alongside your artifact
+sha256sum --check --ignore-missing SHA256SUMS
+```
+
+That proves the bytes are the ones the pipeline published. It does not prove
+the pipeline itself was honest — the same run produced both the binary and the
+checksums. For that, verify the provenance attestation, which is signed by
+GitHub's OIDC identity and names the workflow, commit, and runner that built
+the artifact:
+
+```sh
+gh attestation verify Parchment_1.0.1_aarch64.dmg --repo scrypt-kitty/parchment
+```
+
+A pass means the file was built by this repository's release workflow from a
+specific commit, and not substituted afterwards.
+
+If you would rather not trust a prebuilt binary at all, building from source
+takes two commands — see [Building](#building).
 
 ## Features
 

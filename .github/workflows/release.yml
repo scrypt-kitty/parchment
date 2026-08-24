@@ -56,6 +56,13 @@ jobs:
           workspaces: ./src-tauri -> target
           key: ${{ matrix.target }}
 
+      # Refuse to build if the tag and the committed version disagree — that
+      # produces installers whose metadata contradicts the release they sit under.
+      - name: Tag matches committed version
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash # the matrix includes Windows, where the default is pwsh
+        run: ./scripts/check-versions.sh "${{ github.ref_name }}"
+
       - run: npm ci
 
       - name: Verify the renderer before shipping a build
@@ -89,4 +96,53 @@ jobs:
 
             These builds are **unsigned**. macOS and Windows will warn on first
             launch; the README explains how to get past it in one step.
+
+            ### Verifying your download
+
+            `SHA256SUMS` is attached below, and every artifact carries a signed
+            build provenance attestation. See the README for how to check both.
           args: ${{ matrix.args }}
+
+  checksums:
+    name: Checksums and provenance
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: Collect the published artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          gh release download "${{ github.ref_name }}" \
+            --repo "${{ github.repository }}" --dir artifacts --pattern '*'
+          ls -la artifacts
+
+      - name: Generate SHA256SUMS
+        run: |
+          set -euo pipefail
+          # Written to the parent directory so the checksum file can never end
+          # up listing itself.
+          (cd artifacts && sha256sum -- * > ../SHA256SUMS)
+          cat SHA256SUMS
+
+      # Ties each artifact to the workflow, commit, and runner that produced it.
+      # A checksum file published by the same pipeline that built the binaries
+      # proves they arrived intact, not that the pipeline was honest; this is
+      # what covers the second case.
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: artifacts/*
+
+      - name: Attach SHA256SUMS to the release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.ref_name }}" SHA256SUMS \
+            --repo "${{ github.repository }}" --clobber

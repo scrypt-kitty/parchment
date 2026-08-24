@@ -15,6 +15,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      # Cheap, and catches a half-applied bump before it reaches a tag.
+      - name: Version consistency
+        run: ./scripts/check-versions.sh
+
       - run: npm ci
       - run: npx tsc --noEmit
 
