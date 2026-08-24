@@ -11,30 +11,52 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+# Each awk program opens its file directly rather than reading a pipe. Piping
+# through `tr -d '\r'` and exiting early on the first match looks tidier, but
+# awk closes the pipe while tr is still writing, and SIGPIPE under `pipefail`
+# kills the script with 141. CR is stripped per-line instead: Windows runners
+# check out with CRLF, which otherwise defeats any end-of-line anchor and shows
+# up as an empty version on Windows only.
+
 pkg=$(node -p "require('./package.json').version")
 conf=$(node -p "require('./src-tauri/tauri.conf.json').version")
-# Only the version inside [package] — a naive grep would also match a
-# dependency pinned to the same string.
+
+# Only the version inside [package] — a bare grep would also match a dependency
+# pinned to the same string.
 cargo=$(awk '
+  { sub(/\r$/, "") }
   /^\[package\]/ { in_package = 1; next }
   /^\[/          { in_package = 0 }
-  in_package && /^version[[:space:]]*=/ {
+  in_package && !found && /^version[[:space:]]*=/ {
     line = $0
     sub(/^version[[:space:]]*=[[:space:]]*"/, "", line)
     sub(/".*$/, "", line)
     print line
-    exit
+    found = 1
   }
 ' src-tauri/Cargo.toml)
-lock=$(perl -0ne 'print $1 if /name = "parchment"\nversion = "([^"]+)"/' src-tauri/Cargo.lock)
 
-printf 'package.json       %s\n'      "$pkg"
-printf 'tauri.conf.json    %s\n'      "$conf"
-printf 'Cargo.toml         %s\n'      "$cargo"
-printf 'Cargo.lock         %s\n'      "$lock"
+lock=$(awk '
+  { sub(/\r$/, "") }
+  /^name = "parchment"$/ { in_entry = 1; next }
+  in_entry && !found && /^version[[:space:]]*=/ {
+    line = $0
+    sub(/^version[[:space:]]*=[[:space:]]*"/, "", line)
+    sub(/".*$/, "", line)
+    print line
+    found = 1
+    in_entry = 0
+  }
+' src-tauri/Cargo.lock)
+
+printf 'package.json       %s\n' "$pkg"
+printf 'tauri.conf.json    %s\n' "$conf"
+printf 'Cargo.toml         %s\n' "$cargo"
+printf 'Cargo.lock         %s\n' "$lock"
 
 fail=0
 for value in "$conf" "$cargo" "$lock"; do
+  [ -n "$value" ] || fail=1
   [ "$value" = "$pkg" ] || fail=1
 done
 
