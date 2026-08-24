@@ -140,6 +140,13 @@ CI workflow, which builds each target on its native runner.
 | [`src/toc.ts`](src/toc.ts), [`src/find.ts`](src/find.ts), [`src/prefs.ts`](src/prefs.ts) | Sidebar, in-document search, persisted zoom/theme |
 | [`test/render.test.mjs`](test/render.test.mjs) | Renderer tests, run against jsdom |
 
+Rendering stays in JavaScript rather than moving into the Rust core. That was
+measured rather than assumed — see
+[`docs/rendering-engine-comparison.md`](docs/rendering-engine-comparison.md),
+which found the Rust equivalents would multiply dependencies 15 → 141, make
+highlighting slower, and trade the most-audited HTML sanitizer available for a
+less-tested one.
+
 All rendering happens in the webview; all file and OS access happens in Rust.
 The two talk over a handful of commands and four events, which is the entire
 API surface between them.
