@@ -10,11 +10,13 @@ import { convertFileSrc } from "@tauri-apps/api/core";
  *  read arbitrary paths off disk. */
 const ASSET_SCHEME = "mdasset";
 
-const md: MarkdownIt = new MarkdownIt({
+const md = new MarkdownIt({
   html: true,
   linkify: true,
   breaks: false,
-  highlight(code, lang) {
+  // The return type is annotated because this callback refers to `md` while
+  // `md` is still being initialised; without it the inference is circular.
+  highlight(code: string, lang: string): string {
     if (lang && hljs.getLanguage(lang)) {
       try {
         return hljs.highlight(code, { language: lang, ignoreIllegals: true }).value;
