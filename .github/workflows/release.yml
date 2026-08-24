@@ -136,7 +136,7 @@ jobs:
       # proves they arrived intact, not that the pipeline was honest; this is
       # what covers the second case.
       - name: Attest build provenance
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: artifacts/*
 

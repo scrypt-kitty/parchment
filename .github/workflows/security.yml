@@ -76,7 +76,23 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
+          fetch-depth: 0 # scan the whole history, not just the tip
+
+      # The gitleaks *scanner* is MIT. The gitleaks-action wrapper around it is
+      # not — it ships under a commercial EULA and asks organisations for a
+      # licence key. Running the binary directly keeps this pipeline free of
+      # proprietary tooling, which matters more than usual for a GPL project,
+      # and drops a dependency at the same time.
+      - name: Install gitleaks
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_VERSION: 8.30.1
+        run: |
+          set -euo pipefail
+          curl -sSfL \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz gitleaks
+          sudo install -m 0755 gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      - name: Scan history for secrets
+        run: gitleaks git --no-banner --redact --verbose

@@ -69,7 +69,7 @@ jobs:
       - name: Verify all four files agree
         run: ./scripts/check-versions.sh
 
-      - uses: peter-evans/create-pull-request@v7
+      - uses: peter-evans/create-pull-request@v8
         with:
           branch: release/v${{ steps.version.outputs.next }}
           title: Release v${{ steps.version.outputs.next }}
