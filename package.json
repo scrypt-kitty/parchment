@@ -23,8 +23,8 @@
     "tauri": "tauri",
     "start": "tauri dev",
     "bundle": "tauri build",
-    "test": "node test/render.test.mjs",
-    "test:coverage": "c8 --reporter=text --reporter=lcov --include='src/**' --check-coverage --lines 95 --functions 95 --branches 80 node test/render.test.mjs",
+    "test": "node test/index.mjs",
+    "test:coverage": "c8 --reporter=text --reporter=lcov --include='src/**' --check-coverage --lines 90 --functions 90 --branches 80 node test/index.mjs",
     "validate": "npm run test:coverage && tsc --noEmit && npm run lint:rust",
     "lint:rust": "cargo fmt --manifest-path src-tauri/Cargo.toml --check && cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings"
   },

@@ -61,8 +61,18 @@ Those are real bugs. Please report them.
 
 ## How the app limits its own blast radius
 
-- **No network.** No HTTP client is linked, no analytics, no update check.
-  Verify with `lsof -nP -iTCP -a -c parchment` while it runs.
+- **One network request, and only one.** Once a day the app asks GitHub for the
+  latest release tag, so it can tell you an update exists. It sends no
+  identifiers and nothing about your files, and it never downloads or installs
+  anything — a newer version just opens the release page in your browser.
+  *Check for Updates Automatically* turns it off entirely. No analytics, no
+  crash reporting, no update payloads.
+- **No HTTP client is linked.** The check is made by the webview's `fetch`, so
+  `otool -L` on the binary still lists nothing but system frameworks. The
+  reachable host is fixed by CSP to `api.github.com` alone. Note that on macOS
+  the request is issued by the shared `com.apple.WebKit.Networking.xpc` service,
+  so per-process socket tools will not attribute it to `parchment` either way —
+  read the CSP rather than trusting `lsof`.
 - **A deliberately small permission set.** Declared in
   [`src-tauri/capabilities/default.json`](src-tauri/capabilities/default.json):
   open a file dialog, save a file dialog, open a URL in the browser, set the

@@ -13,6 +13,12 @@
       </aside>
 
       <main id="main">
+        <div id="update-bar" hidden>
+          <span id="update-text"></span>
+          <button id="update-download" type="button">Download</button>
+          <button id="update-dismiss" type="button" title="Dismiss">&#10005;</button>
+        </div>
+
         <div id="findbar" hidden>
           <input
             id="find-input"
@@ -33,6 +39,7 @@
             <div class="empty-art" aria-hidden="true">&#9634;</div>
             <h1>Parchment</h1>
             <p>Drop a Markdown file here, or press <kbd>&#8984;O</kbd> to open one.</p>
+            <div id="recent" hidden></div>
           </section>
         </div>
       </main>

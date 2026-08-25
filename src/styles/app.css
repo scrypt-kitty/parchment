@@ -300,3 +300,123 @@ mark.find-hit.current {
     padding: 0;
   }
 }
+
+/* ------------------------------------------------------------- update bar */
+
+#update-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px 7px 14px;
+  background: var(--chrome-accent);
+  color: #ffffff;
+  font-size: 13px;
+  z-index: 15;
+}
+
+#update-bar[hidden] {
+  display: none;
+}
+
+#update-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#update-bar button {
+  flex: none;
+  border: 0;
+  border-radius: 5px;
+  font: inherit;
+  font-weight: 500;
+  cursor: default;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 3px 10px;
+}
+
+#update-bar button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+#update-dismiss {
+  padding: 3px 8px !important;
+  background: transparent !important;
+  opacity: 0.8;
+}
+
+#update-dismiss:hover {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------- recents */
+
+#recent {
+  width: min(460px, 78%);
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+#recent[hidden] {
+  display: none;
+}
+
+.recent-head {
+  padding: 0 8px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--chrome-muted);
+}
+
+.recent-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: default;
+  color: var(--chrome-fg);
+}
+
+.recent-row:hover {
+  background: var(--chrome-hover);
+}
+
+.recent-name {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.recent-path,
+.recent-when {
+  font-size: 11px;
+  color: var(--chrome-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-when {
+  font-variant-numeric: tabular-nums;
+}
+
+@media print {
+  #update-bar,
+  #recent {
+    display: none !important;
+  }
+}

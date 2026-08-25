@@ -9,6 +9,8 @@ import { render } from "./render";
 import * as toc from "./toc";
 import * as find from "./find";
 import * as prefs from "./prefs";
+import * as recent from "./recent";
+import * as update from "./update";
 import "./styles/app.css";
 import "./styles/markdown.css";
 import "./styles/code.css";
@@ -24,6 +26,9 @@ const doc = document.getElementById("doc") as HTMLElement;
 const empty = document.getElementById("empty") as HTMLElement;
 const scroller = document.getElementById("scroller") as HTMLElement;
 const dropOverlay = document.getElementById("drop-overlay") as HTMLElement;
+const recentList = document.getElementById("recent") as HTMLElement;
+const updateBar = document.getElementById("update-bar") as HTMLElement;
+const updateText = document.getElementById("update-text") as HTMLElement;
 
 const MARKDOWN_EXTENSIONS = ["md", "markdown", "mdown", "mkd", "mdx", "txt"];
 
@@ -36,6 +41,9 @@ async function openPath(path: string, preserveScroll = false): Promise<void> {
   try {
     payload = await invoke<Document>("load_document", { path });
   } catch (error) {
+    // A file that has been moved or deleted should leave the history, not sit
+    // in it failing forever.
+    await syncRecent(recent.forget(path));
     showError(String(error));
     return;
   }
@@ -53,6 +61,7 @@ async function openPath(path: string, preserveScroll = false): Promise<void> {
 
   currentPath = payload.path;
   await getCurrentWindow().setTitle(payload.name);
+  await syncRecent(recent.remember(payload.path, payload.name));
   toc.build(headings, scroller);
 
   // Restore the reading position after a live reload; jump to top on a new file.
@@ -76,6 +85,50 @@ function clearError(): void {
   emptyHint.innerHTML = emptyHintHtml;
   emptyHint.classList.remove("error");
 }
+
+/* ------------------------------------------------------------ recent files */
+
+/** Keeps the native Open Recent submenu in step with the stored list. */
+async function syncRecent(entries: recent.RecentFile[]): Promise<void> {
+  recent.render(recentList, (path) => void openPath(path));
+  await invoke("set_recent_files", {
+    files: entries.map((entry) => ({ path: entry.path, name: entry.name })),
+  }).catch(() => undefined);
+}
+
+/* ----------------------------------------------------------------- updates */
+
+function showUpdate(latest: string): void {
+  updateText.textContent = `Parchment ${latest} is available`;
+  updateBar.hidden = false;
+  updateBar.dataset.version = latest;
+}
+
+async function runUpdateCheck(manual: boolean): Promise<void> {
+  const outcome = await update.check(manual);
+  if (outcome.status === "available") {
+    showUpdate(outcome.latest);
+  } else if (manual && outcome.status === "up-to-date") {
+    updateText.textContent = `Parchment ${outcome.current} is the latest version`;
+    updateBar.hidden = false;
+    delete updateBar.dataset.version;
+    window.setTimeout(() => (updateBar.hidden = true), 4000);
+  } else if (manual && outcome.status === "failed") {
+    updateText.textContent = `Update check failed — ${outcome.reason}`;
+    updateBar.hidden = false;
+    delete updateBar.dataset.version;
+  }
+}
+
+document.getElementById("update-download")!.addEventListener("click", () => {
+  void update.openReleasePage();
+});
+
+document.getElementById("update-dismiss")!.addEventListener("click", () => {
+  const version = updateBar.dataset.version;
+  if (version) update.dismiss(version);
+  updateBar.hidden = true;
+});
 
 async function pickFile(): Promise<void> {
   const selected = await openDialog({
@@ -142,6 +195,11 @@ function escapeHtml(value: string): string {
 /* -------------------------------------------------------------- menu wiring */
 
 async function handleMenu(action: string): Promise<void> {
+  if (action.startsWith("recent:")) {
+    await openPath(action.slice("recent:".length));
+    return;
+  }
+
   switch (action) {
     case "open":
       await pickFile();
@@ -175,6 +233,19 @@ async function handleMenu(action: string): Promise<void> {
       break;
     case "toggle-theme":
       prefs.cycleTheme();
+      break;
+    case "check-updates":
+      await runUpdateCheck(true);
+      break;
+    case "toggle-auto-update": {
+      const enabled = !update.isEnabled();
+      update.setEnabled(enabled);
+      await invoke("set_auto_update_checked", { enabled }).catch(() => undefined);
+      break;
+    }
+    case "clear-recent":
+      recent.clear();
+      await syncRecent([]);
       break;
     case "toggle-toc": {
       const next = !toc.isVisible();
@@ -274,12 +345,19 @@ async function main(): Promise<void> {
 
   await initDragDrop();
 
+  await syncRecent(recent.list());
+  await invoke("set_auto_update_checked", { enabled: update.isEnabled() }).catch(() => undefined);
+
   // Rust holds any path passed via CLI args or a macOS "Open With" launch that
   // arrived before the webview finished loading.
   const pending = await invoke<string | null>("take_pending_file");
   if (pending) await openPath(pending);
 
   await getCurrentWindow().show();
+
+  // After the window is up, so a slow or unreachable network never delays the
+  // first paint.
+  void runUpdateCheck(false);
 }
 
 void main();

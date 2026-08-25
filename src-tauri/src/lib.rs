@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 #[cfg(not(target_os = "macos"))]
 use tauri::WindowEvent;
 use tauri::{Emitter, Manager, State};
@@ -26,6 +26,19 @@ pub struct AppState {
     /// in `pending` instead.
     ready: AtomicBool,
     watcher: Mutex<watcher::Watch>,
+    /// Mirrors the frontend's recent-files list so the native Open Recent
+    /// submenu can be rebuilt from it. Paths only — never contents.
+    recent: Mutex<Vec<RecentFile>>,
+    /// Whether the automatic update check is enabled, reflected as the checked
+    /// state of the corresponding menu item.
+    auto_update: AtomicBool,
+}
+
+/// One entry of the Open Recent submenu.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct RecentFile {
+    pub path: String,
+    pub name: String,
 }
 
 #[derive(Serialize)]
@@ -107,6 +120,35 @@ fn take_pending_file(state: State<'_, AppState>) -> Option<String> {
         .map(|p| p.to_string_lossy().into_owned())
 }
 
+/// Replaces the Open Recent submenu contents. Called by the frontend, which
+/// owns the list; Rust only mirrors it for the native menu.
+#[tauri::command]
+fn set_recent_files(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+    files: Vec<RecentFile>,
+) -> Result<(), String> {
+    *state.recent.lock().unwrap() = files;
+    rebuild_menu(&app, &state)
+}
+
+/// Syncs the checked state of "Check Automatically" with the stored preference.
+#[tauri::command]
+fn set_auto_update_checked(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+    enabled: bool,
+) -> Result<(), String> {
+    state.auto_update.store(enabled, Ordering::SeqCst);
+    rebuild_menu(&app, &state)
+}
+
+fn rebuild_menu(app: &tauri::AppHandle, state: &State<'_, AppState>) -> Result<(), String> {
+    let recent = state.recent.lock().unwrap().clone();
+    let auto_update = state.auto_update.load(Ordering::SeqCst);
+    menu::install(app, &recent, auto_update).map_err(|e| format!("Can't rebuild the menu: {e}"))
+}
+
 /// Route a file to the webview if it can receive it, otherwise park it.
 fn deliver(app: &tauri::AppHandle, path: PathBuf) {
     let state = app.state::<AppState>();
@@ -152,10 +194,14 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             load_document,
             write_text_file,
-            take_pending_file
+            take_pending_file,
+            set_recent_files,
+            set_auto_update_checked
         ])
         .setup(|app| {
-            menu::install(app.handle())?;
+            // Built empty; the frontend repopulates it once it has read its
+            // stored list, which happens before the window is shown.
+            menu::install(app.handle(), &[], true)?;
             if let Some(path) = file_from_args(std::env::args()) {
                 *app.state::<AppState>().pending.lock().unwrap() = Some(path);
             }

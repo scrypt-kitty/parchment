@@ -1,7 +1,8 @@
 /**
  * Renderer tests.
  *
- * `render.ts` is browser code, so it runs against a jsdom document. Node 22
+ * `render.ts` is browser code, so it runs against the shared jsdom document in
+ * setup.mjs. Node 22
  * strips the TypeScript types on import, so the source is loaded directly —
  * no bundling step, which means coverage maps straight onto src/render.ts.
  *
@@ -10,41 +11,8 @@
  */
 import assert from "node:assert/strict";
 
-import { JSDOM } from "jsdom";
-
-// A hand-rolled runner rather than node:test: the renderer needs a DOM in place
-// before any test runs, and node:test quietly drops suites registered after a
-// top-level await on some Node versions — which once reduced this file to four
-// of its tests while still reporting success. Twenty lines is worth the
-// certainty, and it prints its own totals so a silent drop cannot recur.
-const suites = [];
-let current = null;
-
-function describe(name, body) {
-  current = { name, tests: [] };
-  suites.push(current);
-  body();
-}
-
-function test(name, body) {
-  current.tests.push({ name, body });
-}
-
-const dom = new JSDOM("<!doctype html><html><body></body></html>", {
-  url: "http://localhost/",
-});
-
-globalThis.window = dom.window;
-globalThis.document = dom.window.document;
-globalThis.Node = dom.window.Node;
-globalThis.NodeFilter = dom.window.NodeFilter;
-globalThis.HTMLElement = dom.window.HTMLElement;
-globalThis.DocumentFragment = dom.window.DocumentFragment;
-globalThis.trustedTypes = undefined;
-
-dom.window.__TAURI_INTERNALS__ = {
-  convertFileSrc: (path, scheme) => `${scheme}://localhost/${encodeURIComponent(path)}`,
-};
+import "./setup.mjs";
+import { describe, test } from "./runner.mjs";
 
 const { render } = await import("../src/render.ts");
 
@@ -197,26 +165,3 @@ describe("frontmatter", () => {
     assert.match(html("above\n\n---\n\nbelow"), /<hr>/);
   });
 });
-
-let passed = 0;
-const failures = [];
-
-for (const suite of suites) {
-  console.log(`\n${suite.name}`);
-  for (const { name, body } of suite.tests) {
-    try {
-      body();
-      passed += 1;
-      console.log(`  \u2713 ${name}`);
-    } catch (error) {
-      failures.push({ suite: suite.name, name, error });
-      console.log(`  \u2717 ${name}`);
-    }
-  }
-}
-
-console.log(`\n${passed} passed, ${failures.length} failed`);
-for (const { suite, name, error } of failures) {
-  console.log(`\n${suite} \u203a ${name}\n${error.message}`);
-}
-process.exit(failures.length ? 1 : 0);

@@ -1,8 +1,10 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Everything the viewer window is allowed to do. Deliberately minimal: no filesystem plugin, no HTTP, no shell.",
-  "windows": ["main"],
+  "description": "Everything the viewer window is allowed to do. Deliberately minimal: no filesystem plugin, no HTTP plugin, no shell. The only network access is the webview's own fetch to api.github.com, allowed by the CSP in tauri.conf.json rather than by a capability.",
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "core:window:allow-set-title",
@@ -10,6 +12,7 @@
     "core:webview:allow-internal-toggle-devtools",
     "dialog:allow-open",
     "dialog:allow-save",
-    "opener:allow-open-url"
+    "opener:allow-open-url",
+    "core:app:allow-version"
   ]
 }

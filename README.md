@@ -94,27 +94,61 @@ takes two commands — see [Building](#building).
 - **Zoom** (<kbd>⌘+</kbd> / <kbd>⌘−</kbd> / <kbd>⌘0</kbd>), remembered between launches
 - **Appearance** (<kbd>⇧⌘L</kbd>) cycling system → light → dark
 - **Export to a standalone HTML file** with styles inlined, and **Print**
+- **Recent files** on the start screen and under *File → Open Recent*
+- **Update notice** when a newer release exists — off-switch included, and it
+  never installs anything itself
 
 ## Privacy
 
-Parchment makes no network requests. There is no analytics SDK, no update
-pinger, no crash reporter. You can verify that rather than take it on faith.
+Parchment makes exactly one kind of network request: once a day, it asks GitHub
+for the latest release tag so it can tell you an update exists. That is the
+whole of it. No analytics, no crash reporting, no account, no phoning home with
+what you read.
 
-The direct check is to watch for sockets while the app runs:
+**Turn it off** in *Check for Updates Automatically* (the Parchment menu on macOS, Help
+elsewhere) and the app makes no requests at all, ever.
+
+What the check does, precisely:
+
+- A single anonymous `GET` to `https://api.github.com/repos/scrypt-kitty/parchment/releases/latest`
+- Sends no cookies, no credentials, no identifiers, and nothing about your files
+- Reads one field, `tag_name`, and compares it to the running version
+- **Never downloads or installs anything.** If there is a newer version it
+  offers to open the release page in your browser, and you take it from there.
+  Self-updating desktop apps fail in ways that leave you with a broken install
+
+GitHub necessarily sees your IP address and the fact that a Parchment
+installation checked in, in the same way it would if you loaded the releases
+page yourself. If that is not acceptable, turn the check off — or install
+through a package manager, which never triggers it.
+
+The request is made by the webview's own `fetch`, not by Rust, so no HTTP client
+is compiled into the binary:
 
 ```sh
-lsof -nP -iTCP -a -c parchment    # no output means no connections
+otool -L /Applications/Parchment.app/Contents/MacOS/parchment   # system frameworks only
 ```
 
-Grepping the binary for URLs is the weaker check, because it finds inert
-strings: source-comment links baked into Tauri, wry, and muda, the literal
-`HTTP/1.1` version tokens, and this project's own repository URL. What matters
-is that no *endpoint* appears — no analytics host, no update feed:
+**Per-process socket tools will not show you this request, and that is not
+evidence of anything.** On macOS WKWebView hands its networking to a shared
+system service, so the connection belongs to
+`com.apple.WebKit.Networking.xpc` — parented to `launchd`, shared with every
+other WebKit app — rather than to `parchment`. `lsof -c parchment` prints
+nothing whether the check is enabled or disabled. Use a network filter such as
+Little Snitch, or `tcpdump`, if you want to watch it directly.
+
+What *is* app-specific and checkable is the policy baked into the binary. The
+webview may reach exactly one host, and you can read that out of the shipped
+app:
 
 ```sh
-strings -a "/Applications/Parchment.app/Contents/MacOS/parchment" \
-  | grep -Eio 'https?://[a-z0-9.-]+\.[a-z]{2,}' | sort -u
+strings -a /Applications/Parchment.app/Contents/MacOS/parchment \
+  | grep -o "connect-src[^\"]*"
 ```
+
+`connect-src` names `api.github.com` and nothing else, so neither a document nor
+a compromised renderer can reach anywhere else. The single call site is
+[`src/update.ts`](src/update.ts); with the check disabled it is never reached.
 
 The app's permission set is declared in
 [`src-tauri/capabilities/default.json`](src-tauri/capabilities/default.json) and
