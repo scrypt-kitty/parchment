@@ -76,7 +76,17 @@ jobs:
       - name: Verify all four files agree
         run: ./scripts/check-versions.sh
 
+      # GITHUB_TOKEN cannot trigger workflows — GitHub blocks that to stop runs
+      # recursing — so a PR opened with it arrives with *no checks at all* and
+      # can never satisfy branch protection. Two ways out:
+      #
+      #   1. Add a fine-grained PAT with contents+pull-requests write as the
+      #      RELEASE_TOKEN secret. Checks then run normally. Recommended.
+      #   2. Without it, close and reopen the PR once. That is a human event,
+      #      so it starts the checks.
       - uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
         with:
           branch: release/v${{ steps.version.outputs.next }}
           title: Release v${{ steps.version.outputs.next }}
@@ -88,6 +98,9 @@ jobs:
             Version bump ${{ steps.version.outputs.current }} → **${{ steps.version.outputs.next }}**,
             applied across `package.json`, `src-tauri/tauri.conf.json`,
             `src-tauri/Cargo.toml`, and `Cargo.lock`.
+
+            If this PR shows no checks, close and reopen it once — see the
+            comment in the workflow for why, and how to avoid it.
 
             Merge this once checks pass, then publish:
 

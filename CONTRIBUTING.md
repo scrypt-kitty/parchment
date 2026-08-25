@@ -89,6 +89,11 @@ The version appears in four files that must agree. Don't edit them by hand —
 run the **Bump version** workflow from the Actions tab, which applies the bump
 everywhere and opens a PR.
 
+If the generated PR shows no checks, close and reopen it once. GitHub refuses
+to trigger workflows from events created by `GITHUB_TOKEN`, so a PR the bot
+opened starts with none — reopening it is a human event and starts them. Adding
+a `RELEASE_TOKEN` secret avoids the dance entirely.
+
 Once that PR is merged:
 
 ```sh
