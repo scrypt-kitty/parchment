@@ -8,6 +8,13 @@ name: Bump version
 # A PR rather than a direct push, because main requires status checks: the bump
 # gets the same gate as any other change, and the tag is only ever created from
 # a commit CI has already approved.
+#
+# This needs "Allow GitHub Actions to create and approve pull requests" enabled
+# in Settings > Actions > General. GitHub bundles creation and approval into one
+# toggle, so it is worth being clear about the approval half: nothing in this
+# repository self-approves — the auto-merge workflow deliberately does not — and
+# main gates on status checks rather than reviews, so an approval from Actions
+# would not unblock anything on its own.
 
 on:
   workflow_dispatch:
