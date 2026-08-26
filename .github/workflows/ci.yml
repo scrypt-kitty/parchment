@@ -6,6 +6,20 @@ on:
   pull_request:
 
 jobs:
+  # A malformed workflow is invisible until something tries to run it — GitHub
+  # just shows the file path instead of the workflow name and fails. actionlint
+  # catches that, along with duplicate keys, bad expressions, and unknown
+  # action inputs.
+  workflows:
+    name: Workflow lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: actionlint
+      - run: actionlint -color
+
   frontend:
     name: Types and renderer tests
     runs-on: ubuntu-latest

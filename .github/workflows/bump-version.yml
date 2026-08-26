@@ -87,7 +87,6 @@ jobs:
       - uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
-        with:
           branch: release/v${{ steps.version.outputs.next }}
           title: Release v${{ steps.version.outputs.next }}
           commit-message: |
