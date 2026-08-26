@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+PackageIdentifier: scrypt-kitty.Parchment
+PackageVersion: 1.1.0
+PackageLocale: en-US
+Publisher: scrypt-kitty
+PublisherUrl: https://github.com/scrypt-kitty
+PublisherSupportUrl: https://github.com/scrypt-kitty/parchment/issues
+PackageName: Parchment
+PackageUrl: https://github.com/scrypt-kitty/parchment
+License: GPL-3.0-or-later
+LicenseUrl: https://github.com/scrypt-kitty/parchment/blob/main/LICENSE
+Copyright: Copyright (c) 2026 Ruby Perez
+ShortDescription: A fast, private, open-source Markdown viewer
+Description: |-
+  Parchment opens a Markdown file and renders it. No editor, no account, no sync,
+  no telemetry. It renders GitHub-flavored Markdown with GitHub's typography in
+  light and dark, reloads when the file changes on disk, and offers in-document
+  search, a table of contents, zoom, HTML export, and printing.
+
+  The only network request it makes is a once-daily check for a newer release,
+  which can be switched off.
+Moniker: parchment
+Tags:
+  - markdown
+  - viewer
+  - md
+  - documentation
+  - reader
+ReleaseNotesUrl: https://github.com/scrypt-kitty/parchment/releases/tag/v1.1.0
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

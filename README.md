@@ -10,6 +10,15 @@ you can read every line that runs on your machine.
 
 ## Install
 
+### Homebrew (macOS)
+
+```sh
+brew install --cask scrypt-kitty/tap/parchment
+xattr -dr com.apple.quarantine /Applications/Parchment.app
+```
+
+### Direct download
+
 Grab the file for your platform from the
 [latest release](https://github.com/scrypt-kitty/parchment/releases/latest):
 

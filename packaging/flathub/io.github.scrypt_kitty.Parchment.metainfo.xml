@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  AppStream metadata.
+
+  Useful beyond Flathub: GNOME Software and KDE Discover read this for the .deb
+  too, which is why it is worth having even before a Flatpak exists.
+
+  Validate with:  appstreamcli validate io.github.scrypt_kitty.Parchment.metainfo.xml
+-->
+<component type="desktop-application">
+  <id>io.github.scrypt_kitty.Parchment</id>
+
+  <name>Parchment</name>
+  <summary>Read Markdown files</summary>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <developer id="io.github.scrypt_kitty">
+    <name>Ruby Perez</name>
+  </developer>
+
+  <description>
+    <p>
+      Parchment opens a Markdown file and renders it. That is the whole product:
+      no editor, no account, no sync, no telemetry.
+    </p>
+    <p>Reading:</p>
+    <ul>
+      <li>GitHub-flavored Markdown — tables, task lists, strikethrough, autolinks</li>
+      <li>GitHub's typography and colours, in light and dark</li>
+      <li>Syntax-highlighted code blocks with one-click copy</li>
+      <li>Images alongside the document resolve and display</li>
+    </ul>
+    <p>While reading:</p>
+    <ul>
+      <li>Live reload — edit in your editor and the view follows, keeping your place</li>
+      <li>Find within the document, with a match count</li>
+      <li>A table of contents that tracks the section you are in</li>
+      <li>Zoom and appearance, remembered between launches</li>
+      <li>Export to a standalone HTML file, and print</li>
+      <li>Recent files, so you can pick up where you left off</li>
+    </ul>
+    <p>
+      The only network request Parchment makes is a once-daily check for a newer
+      release, which can be switched off. It never downloads or installs updates
+      itself.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.scrypt_kitty.Parchment.desktop</launchable>
+
+  <url type="homepage">https://github.com/scrypt-kitty/parchment</url>
+  <url type="bugtracker">https://github.com/scrypt-kitty/parchment/issues</url>
+  <url type="vcs-browser">https://github.com/scrypt-kitty/parchment</url>
+
+  <categories>
+    <category>Utility</category>
+    <category>TextEditor</category>
+  </categories>
+
+  <keywords>
+    <keyword>markdown</keyword>
+    <keyword>md</keyword>
+    <keyword>viewer</keyword>
+    <keyword>reader</keyword>
+    <keyword>documentation</keyword>
+  </keywords>
+
+  <provides>
+    <mediatype>text/markdown</mediatype>
+  </provides>
+
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </supports>
+
+  <requires>
+    <display_length compare="ge">420</display_length>
+  </requires>
+
+  <content_rating type="oars-1.1"/>
+
+  <!--
+    Flathub requires at least one screenshot with a caption. These URLs must
+    resolve before submission — see packaging/README.md.
+  -->
+  <screenshots>
+    <screenshot type="default">
+      <caption>A rendered Markdown document with the table of contents open</caption>
+      <image>https://raw.githubusercontent.com/scrypt-kitty/parchment/main/docs/screenshots/light.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>The same document in dark mode</caption>
+      <image>https://raw.githubusercontent.com/scrypt-kitty/parchment/main/docs/screenshots/dark.png</image>
+    </screenshot>
+  </screenshots>
+
+  <releases>
+    <release version="1.1.0" date="2026-08-25">
+      <description>
+        <p>Recent files, and an optional check for new releases.</p>
+      </description>
+      <url>https://github.com/scrypt-kitty/parchment/releases/tag/v1.1.0</url>
+    </release>
+    <release version="1.0.1" date="2026-08-24">
+      <description>
+        <p>First release under the GPL.</p>
+      </description>
+      <url>https://github.com/scrypt-kitty/parchment/releases/tag/v1.0.1</url>
+    </release>
+  </releases>
+</component>

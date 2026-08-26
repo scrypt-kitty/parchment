@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
+PackageIdentifier: scrypt-kitty.Parchment
+PackageVersion: 1.1.0
+MinimumOSVersion: 10.0.17763.0
+InstallModes:
+  - interactive
+  - silent
+UpgradeBehavior: install
+ReleaseDate: 2026-08-25
+Installers:
+  # Only the NSIS installer is listed. The MSI would additionally need its
+  # ProductCode GUID, which can only be read out of the .msi itself (msiinfo,
+  # or Windows), and a placeholder there fails winget validation. Add the MSI
+  # once that value can be extracted in the release pipeline.
+  - Architecture: x64
+    InstallerType: nullsoft
+    InstallerUrl: https://github.com/scrypt-kitty/parchment/releases/download/v1.1.0/Parchment_1.1.0_x64-setup.exe
+    InstallerSha256: a0fb57ec4bf01d9a0a3be635b42e9988ac8507d10247a2666504e59dd5b19b6c
+    Scope: machine
+ManifestType: installer
+ManifestVersion: 1.6.0
