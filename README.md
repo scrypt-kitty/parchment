@@ -97,7 +97,10 @@ takes two commands — see [Building](#building).
 
 **While reading**
 
-- **Live reload** — edit in your editor, the view updates and holds your scroll position
+- **Live reload** — edit in your editor, the view updates and holds your scroll
+  position, with a brief notice so you can see it happened. *View → Reload
+  Automatically* switches this to a "File changed" prompt if you would rather
+  the document never move while you are reading it
 - **Find** (<kbd>⌘F</kbd>) with match count and next/previous
 - **Table of contents** sidebar (<kbd>⌘\\</kbd>) that tracks the section you're in
 - **Zoom** (<kbd>⌘+</kbd> / <kbd>⌘−</kbd> / <kbd>⌘0</kbd>), remembered between launches

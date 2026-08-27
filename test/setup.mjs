@@ -22,6 +22,19 @@ globalThis.trustedTypes = undefined;
 
 // Mirrors the URL shape the real webview produces, so path-resolution
 // assertions test the same strings users would get.
+// jsdom does not implement matchMedia, and prefs.ts calls it at module scope to
+// resolve the "system" theme. Reports light; tests may replace it.
+dom.window.matchMedia = (query) => ({
+  matches: false,
+  media: query,
+  onchange: null,
+  addEventListener() {},
+  removeEventListener() {},
+  addListener() {},
+  removeListener() {},
+  dispatchEvent: () => false,
+});
+
 /** Version reported by the stubbed `getVersion()`; tests may reassign it. */
 export const app = { version: "1.0.1" };
 

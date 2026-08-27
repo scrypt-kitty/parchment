@@ -19,6 +19,7 @@ pub fn install<R: Runtime>(
     app: &AppHandle<R>,
     recent: &[RecentFile],
     auto_update: bool,
+    auto_reload: bool,
 ) -> tauri::Result<()> {
     let item = |id: &str, label: &str, accel: &str| {
         MenuItemBuilder::with_id(id, label)
@@ -90,6 +91,12 @@ pub fn install<R: Runtime>(
             "Switch Appearance",
             "CmdOrCtrl+Shift+L",
         )?)
+        .separator()
+        .item(
+            &CheckMenuItemBuilder::with_id("toggle-auto-reload", "Reload Automatically")
+                .checked(auto_reload)
+                .build(app)?,
+        )
         .separator()
         .item(&PredefinedMenuItem::fullscreen(
             app,

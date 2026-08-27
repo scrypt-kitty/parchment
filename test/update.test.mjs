@@ -12,6 +12,7 @@ import { describe, test } from "./runner.mjs";
 
 const update = await import("../src/update.ts");
 const recent = await import("../src/recent.ts");
+const prefs = await import("../src/prefs.ts");
 
 describe("version comparison", () => {
   test("detects a newer patch, minor, and major", () => {
@@ -284,5 +285,102 @@ describe("recent files rendering", () => {
     recent.remember("/docs/x.md", "x.md");
     recent.clear();
     assert.deepEqual(recent.list(), []);
+  });
+});
+
+describe("automatic reload preference", () => {
+  test("is on when nothing has been stored", () => {
+    localStorage.clear();
+    assert.equal(prefs.autoReloadEnabled(), true);
+  });
+
+  test("turns off and back on independently of the update check", () => {
+    localStorage.clear();
+    prefs.setAutoReload(false);
+    assert.equal(prefs.autoReloadEnabled(), false);
+    assert.equal(update.isEnabled(), true, "update check is a separate setting");
+    prefs.setAutoReload(true);
+    assert.equal(prefs.autoReloadEnabled(), true);
+  });
+});
+
+describe("zoom", () => {
+  test("starts at 100% and persists a change", () => {
+    localStorage.clear();
+    prefs.applyZoom();
+    assert.equal(document.documentElement.style.getPropertyValue("--zoom"), "1");
+    prefs.zoomIn();
+    assert.notEqual(document.documentElement.style.getPropertyValue("--zoom"), "1");
+    assert.ok(localStorage.getItem("parchment.zoom"));
+  });
+
+  test("returns to 100% on reset", () => {
+    prefs.zoomIn();
+    prefs.zoomIn();
+    prefs.zoomReset();
+    assert.equal(document.documentElement.style.getPropertyValue("--zoom"), "1");
+  });
+
+  test("clamps instead of running off either end", () => {
+    localStorage.clear();
+    for (let i = 0; i < 50; i++) prefs.zoomIn();
+    const max = document.documentElement.style.getPropertyValue("--zoom");
+    prefs.zoomIn();
+    assert.equal(document.documentElement.style.getPropertyValue("--zoom"), max, "no zoom past max");
+
+    for (let i = 0; i < 50; i++) prefs.zoomOut();
+    const min = document.documentElement.style.getPropertyValue("--zoom");
+    prefs.zoomOut();
+    assert.equal(document.documentElement.style.getPropertyValue("--zoom"), min, "no zoom past min");
+    assert.ok(Number(min) < 1 && Number(max) > 1);
+  });
+
+  test("never renders a non-numeric zoom", () => {
+    // The stored step is parsed once at module load, where a corrupt value
+    // falls back to the default; applyZoom deliberately does not re-read it.
+    // What matters at any later point is that the CSS variable is always a
+    // usable number, never NaN.
+    localStorage.setItem("parchment.zoom", "not-a-number");
+    prefs.applyZoom();
+    const zoom = Number(document.documentElement.style.getPropertyValue("--zoom"));
+    assert.ok(Number.isFinite(zoom) && zoom > 0, `got ${zoom}`);
+
+    prefs.zoomReset();
+    assert.equal(document.documentElement.style.getPropertyValue("--zoom"), "1");
+  });
+});
+
+describe("appearance", () => {
+  test("cycles system to light to dark and back", () => {
+    localStorage.clear();
+    assert.equal(prefs.getTheme(), "system");
+    assert.equal(prefs.cycleTheme(), "light");
+    assert.equal(prefs.cycleTheme(), "dark");
+    assert.equal(prefs.cycleTheme(), "system");
+  });
+
+  test("resolves system to a concrete theme on the root element", () => {
+    prefs.setTheme("system");
+    prefs.applyTheme();
+    // The stub reports light.
+    assert.equal(document.documentElement.dataset.theme, "light");
+    assert.equal(document.documentElement.dataset.themePref, "system");
+  });
+
+  test("an explicit choice wins over the system preference", () => {
+    prefs.setTheme("dark");
+    assert.equal(document.documentElement.dataset.theme, "dark");
+    assert.equal(prefs.getTheme(), "dark");
+  });
+});
+
+describe("table of contents preference", () => {
+  test("is off until asked for, then persists", () => {
+    localStorage.clear();
+    assert.equal(prefs.tocEnabled(), false);
+    prefs.setTocEnabled(true);
+    assert.equal(prefs.tocEnabled(), true);
+    prefs.setTocEnabled(false);
+    assert.equal(prefs.tocEnabled(), false);
   });
 });

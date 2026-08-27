@@ -29,6 +29,8 @@ const dropOverlay = document.getElementById("drop-overlay") as HTMLElement;
 const recentList = document.getElementById("recent") as HTMLElement;
 const updateBar = document.getElementById("update-bar") as HTMLElement;
 const updateText = document.getElementById("update-text") as HTMLElement;
+const reloadBar = document.getElementById("reload-bar") as HTMLElement;
+const reloadText = document.getElementById("reload-text") as HTMLElement;
 
 const MARKDOWN_EXTENSIONS = ["md", "markdown", "mdown", "mkd", "mdx", "txt"];
 
@@ -56,6 +58,7 @@ async function openPath(path: string, preserveScroll = false): Promise<void> {
   const { html, headings } = render(payload.content, payload.dir);
   doc.innerHTML = html;
   clearError();
+  if (!preserveScroll) hideReloadBar();
   empty.hidden = true;
   doc.hidden = false;
 
@@ -192,6 +195,54 @@ function escapeHtml(value: string): string {
   return div.innerHTML;
 }
 
+/* ------------------------------------------------------------ file changed */
+
+let reloadTimer: number | undefined;
+
+function hideReloadBar(): void {
+  window.clearTimeout(reloadTimer);
+  reloadBar.hidden = true;
+  reloadBar.classList.remove("transient", "fading");
+}
+
+/** Shown after an automatic reload: informational, fades on its own. */
+function showReloaded(): void {
+  window.clearTimeout(reloadTimer);
+  reloadText.textContent = "Reloaded from disk";
+  reloadBar.classList.add("transient");
+  reloadBar.classList.remove("fading");
+  reloadBar.hidden = false;
+  reloadTimer = window.setTimeout(() => {
+    reloadBar.classList.add("fading");
+    reloadTimer = window.setTimeout(hideReloadBar, 450);
+  }, 1800);
+}
+
+/** Shown when automatic reloading is off: waits to be acted on. */
+function showFileChanged(): void {
+  window.clearTimeout(reloadTimer);
+  reloadText.textContent = "File changed on disk";
+  reloadBar.classList.remove("transient", "fading");
+  reloadBar.hidden = false;
+}
+
+async function handleDocumentChanged(path: string): Promise<void> {
+  if (path !== currentPath) return;
+  if (prefs.autoReloadEnabled()) {
+    await openPath(path, true);
+    showReloaded();
+  } else {
+    showFileChanged();
+  }
+}
+
+document.getElementById("reload-action")!.addEventListener("click", () => {
+  hideReloadBar();
+  if (currentPath) void openPath(currentPath, true);
+});
+
+document.getElementById("reload-dismiss")!.addEventListener("click", hideReloadBar);
+
 /* -------------------------------------------------------------- menu wiring */
 
 async function handleMenu(action: string): Promise<void> {
@@ -237,6 +288,15 @@ async function handleMenu(action: string): Promise<void> {
     case "check-updates":
       await runUpdateCheck(true);
       break;
+    case "toggle-auto-reload": {
+      const enabled = !prefs.autoReloadEnabled();
+      prefs.setAutoReload(enabled);
+      await invoke("set_auto_reload_checked", { enabled }).catch(() => undefined);
+      // Leaving a stale "File changed" bar up after switching to automatic
+      // would be confusing, and the document is about to be current anyway.
+      if (enabled) hideReloadBar();
+      break;
+    }
     case "toggle-auto-update": {
       const enabled = !update.isEnabled();
       update.setEnabled(enabled);
@@ -340,13 +400,14 @@ async function main(): Promise<void> {
   await listen<string>("menu-action", (event) => void handleMenu(event.payload));
   await listen<string>("open-file", (event) => void openPath(event.payload));
   await listen<string>("document-changed", (event) => {
-    if (event.payload === currentPath) void openPath(event.payload, true);
+    void handleDocumentChanged(event.payload);
   });
 
   await initDragDrop();
 
   await syncRecent(recent.list());
   await invoke("set_auto_update_checked", { enabled: update.isEnabled() }).catch(() => undefined);
+  await invoke("set_auto_reload_checked", { enabled: prefs.autoReloadEnabled() }).catch(() => undefined);
 
   // Rust holds any path passed via CLI args or a macOS "Open With" launch that
   // arrived before the webview finished loading.

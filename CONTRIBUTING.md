@@ -31,7 +31,7 @@ node preview.mjs path/to/doc.md preview.html --dark
 |---|---|
 | `src-tauri/src/lib.rs` | Commands, state, file-open plumbing |
 | `src-tauri/src/menu.rs` | Native menu; forwards ids to the webview |
-| `src-tauri/src/watcher.rs` | Live reload |
+| `src-tauri/src/watcher.rs` | Live reload; watches the parent directory so an atomic-rename save is not missed |
 | `src-tauri/src/assets.rs` | The `mdasset://` scheme |
 | `src/render.ts` | markdown-it → highlight.js → DOMPurify → path resolution |
 | `src/main.ts` | Menu events, drag-drop, links, export |

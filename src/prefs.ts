@@ -71,6 +71,17 @@ export function setTheme(next: Theme): void {
   applyTheme();
 }
 
+const RELOAD_KEY = "parchment.autoReload";
+
+/** On unless explicitly turned off, matching the update check. */
+export function autoReloadEnabled(): boolean {
+  return localStorage.getItem(RELOAD_KEY) !== "0";
+}
+
+export function setAutoReload(enabled: boolean): void {
+  localStorage.setItem(RELOAD_KEY, enabled ? "1" : "0");
+}
+
 export function tocEnabled(): boolean {
   return localStorage.getItem(TOC_KEY) === "1";
 }

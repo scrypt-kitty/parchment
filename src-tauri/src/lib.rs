@@ -32,6 +32,9 @@ pub struct AppState {
     /// Whether the automatic update check is enabled, reflected as the checked
     /// state of the corresponding menu item.
     auto_update: AtomicBool,
+    /// Whether a document that changes on disk reloads by itself, or waits to
+    /// be reloaded from the prompt.
+    auto_reload: AtomicBool,
 }
 
 /// One entry of the Open Recent submenu.
@@ -143,10 +146,23 @@ fn set_auto_update_checked(
     rebuild_menu(&app, &state)
 }
 
+/// Syncs the checked state of "Reload Automatically" with the stored preference.
+#[tauri::command]
+fn set_auto_reload_checked(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+    enabled: bool,
+) -> Result<(), String> {
+    state.auto_reload.store(enabled, Ordering::SeqCst);
+    rebuild_menu(&app, &state)
+}
+
 fn rebuild_menu(app: &tauri::AppHandle, state: &State<'_, AppState>) -> Result<(), String> {
     let recent = state.recent.lock().unwrap().clone();
     let auto_update = state.auto_update.load(Ordering::SeqCst);
-    menu::install(app, &recent, auto_update).map_err(|e| format!("Can't rebuild the menu: {e}"))
+    let auto_reload = state.auto_reload.load(Ordering::SeqCst);
+    menu::install(app, &recent, auto_update, auto_reload)
+        .map_err(|e| format!("Can't rebuild the menu: {e}"))
 }
 
 /// Route a file to the webview if it can receive it, otherwise park it.
@@ -196,12 +212,13 @@ pub fn run() {
             write_text_file,
             take_pending_file,
             set_recent_files,
-            set_auto_update_checked
+            set_auto_update_checked,
+            set_auto_reload_checked
         ])
         .setup(|app| {
             // Built empty; the frontend repopulates it once it has read its
             // stored list, which happens before the window is shown.
-            menu::install(app.handle(), &[], true)?;
+            menu::install(app.handle(), &[], true, true)?;
             if let Some(path) = file_from_args(std::env::args()) {
                 *app.state::<AppState>().pending.lock().unwrap() = Some(path);
             }

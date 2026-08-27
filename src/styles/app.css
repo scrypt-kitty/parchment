@@ -420,3 +420,76 @@ mark.find-hit.current {
     display: none !important;
   }
 }
+
+/* ------------------------------------------------------------- reload bar */
+
+#reload-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px 7px 14px;
+  background: #bf8700;
+  color: #ffffff;
+  font-size: 13px;
+  z-index: 15;
+}
+
+:root[data-theme="dark"] #reload-bar {
+  background: #9a6700;
+}
+
+#reload-bar[hidden] {
+  display: none;
+}
+
+#reload-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#reload-bar button {
+  flex: none;
+  border: 0;
+  border-radius: 5px;
+  font: inherit;
+  font-weight: 500;
+  cursor: default;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 3px 10px;
+}
+
+#reload-bar button:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+#reload-dismiss {
+  padding: 3px 8px !important;
+  background: transparent !important;
+  opacity: 0.85;
+}
+
+/* The "Reloaded" confirmation is informational, so it drops the buttons and
+   fades rather than waiting to be dismissed. */
+#reload-bar.transient {
+  background: var(--chrome-hover);
+  color: var(--chrome-muted);
+  transition: opacity 0.4s ease-in-out;
+}
+
+#reload-bar.transient button {
+  display: none;
+}
+
+#reload-bar.fading {
+  opacity: 0;
+}
+
+@media print {
+  #reload-bar {
+    display: none !important;
+  }
+}
