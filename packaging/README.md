@@ -33,13 +33,34 @@ cross-repository token.
 
 [`winget/`](winget) holds a complete v1.6.0 manifest set for 1.1.0.
 
-To submit, fork [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs)
-and copy the three files to
-`manifests/s/scrypt-kitty/Parchment/1.1.0/`, or let `wingetcreate` do it:
+### Submitting without any token
+
+Nothing here needs a token. Fork
+[microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs), copy the
+three files to `manifests/s/scrypt-kitty/Parchment/<version>/`, and open the
+pull request in the browser. For an occasional release this is the whole job.
+
+### Submitting with wingetcreate
+
+A token is only needed to automate it. `wingetcreate` requires a **classic**
+personal access token — [fine-grained tokens are not
+supported](https://github.com/microsoft/winget-create/blob/main/doc/token.md):
+
+| Scope | |
+|---|---|
+| `public_repo` | required |
+| `delete_repo` | optional; lets it clean up the fork when a submission fails |
+
+Pass it through the environment, never as an argument — Microsoft's own note is
+that `--token` "may result in the token being logged":
 
 ```powershell
-wingetcreate submit --token <github-pat> packaging/winget
+$env:WINGET_CREATE_GITHUB_TOKEN = "<classic-pat>"
+wingetcreate submit packaging/winget
 ```
+
+Locally you can skip the token entirely and let `wingetcreate` run its OAuth
+device flow instead.
 
 Two things to know before submitting:
 
