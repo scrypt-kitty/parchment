@@ -2,6 +2,7 @@
  *  the pass/fail total cover the whole test set in one process. */
 import "./render.test.mjs";
 import "./update.test.mjs";
+import "./capabilities.test.mjs";
 
 import { run } from "./runner.mjs";
 

@@ -51,6 +51,16 @@ source.
 
 Coverage thresholds are enforced at 95% lines, 95% functions, 80% branches.
 
+`test/capabilities.test.mjs` asserts the Tauri capability against the call
+sites in `src/`. That file is JSON read by Rust, so a mistake in it is invisible
+to both the TypeScript suite and `cargo`; the one that shipped in 1.1.0 left the
+opener with an empty URL scope and made every outbound link a silent dead click.
+Adding a scheme to the link handler without scoping it fails there.
+
+Neither suite launches the app. `docs/manual-qa.md` lists what only a built
+window can show — outbound links, the update banner, file associations — and is
+worth a pass before tagging a release.
+
 **Any change to sanitization needs a test.** That code is the boundary between a
 document someone sent you and script running on your machine. The existing
 sanitization tests are the model to follow.
