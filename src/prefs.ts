@@ -89,3 +89,23 @@ export function tocEnabled(): boolean {
 export function setTocEnabled(enabled: boolean): void {
   localStorage.setItem(TOC_KEY, enabled ? "1" : "0");
 }
+
+const WIDE_KEY = "parchment.wide";
+
+/** Off by default. The measured column is the better default for prose; wide
+ *  view is for documents that are mostly tables and code, where the column
+ *  wraps things that should not wrap. */
+export function wideEnabled(): boolean {
+  return localStorage.getItem(WIDE_KEY) === "1";
+}
+
+/** Set on the root element rather than toggled per-rule, so the exported HTML
+ *  can carry the same attribute and render the way the window did. */
+export function applyWide(): void {
+  document.documentElement.dataset.wide = wideEnabled() ? "1" : "0";
+}
+
+export function setWideEnabled(enabled: boolean): void {
+  localStorage.setItem(WIDE_KEY, enabled ? "1" : "0");
+  applyWide();
+}

@@ -103,6 +103,8 @@ takes two commands — see [Building](#building).
   the document never move while you are reading it
 - **Find** (<kbd>⌘F</kbd>) with match count and next/previous
 - **Table of contents** sidebar (<kbd>⌘\\</kbd>) that tracks the section you're in
+- **Wide view** (<kbd>⇧⌘\\</kbd>) drops the reading column so a document can
+  use the whole window, for pages that are mostly wide tables or code
 - **Zoom** (<kbd>⌘+</kbd> / <kbd>⌘−</kbd> / <kbd>⌘0</kbd>), remembered between launches
 - **Appearance** (<kbd>⇧⌘L</kbd>) cycling system → light → dark
 - **Export to a standalone HTML file** with styles inlined, and **Print**

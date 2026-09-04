@@ -173,7 +173,7 @@ async function exportHtml(): Promise<void> {
   for (const button of body.querySelectorAll(".copy-code")) button.remove();
 
   const page = `<!doctype html>
-<html lang="en" data-theme="${prefs.getTheme()}">
+<html lang="en" data-theme="${prefs.getTheme()}" data-wide="${prefs.wideEnabled() ? "1" : "0"}">
 <head>
 <meta charset="utf-8">
 <title>${escapeHtml(suggested)}</title>
@@ -313,6 +313,9 @@ async function handleMenu(action: string): Promise<void> {
       prefs.setTocEnabled(next);
       break;
     }
+    case "toggle-wide":
+      prefs.setWideEnabled(!prefs.wideEnabled());
+      break;
   }
 }
 
@@ -395,6 +398,7 @@ async function initDragDrop(): Promise<void> {
 async function main(): Promise<void> {
   prefs.applyZoom();
   prefs.applyTheme();
+  prefs.applyWide();
   toc.setVisible(prefs.tocEnabled());
 
   await listen<string>("menu-action", (event) => void handleMenu(event.payload));

@@ -86,6 +86,7 @@ pub fn install<R: Runtime>(
         .item(&item("zoom-reset", "Actual Size", "CmdOrCtrl+0")?)
         .separator()
         .item(&item("toggle-toc", "Table of Contents", "CmdOrCtrl+\\")?)
+        .item(&item("toggle-wide", "Wide View", "CmdOrCtrl+Shift+\\")?)
         .item(&item(
             "toggle-theme",
             "Switch Appearance",

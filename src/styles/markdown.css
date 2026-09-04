@@ -56,6 +56,12 @@
   display: none;
 }
 
+/* Wide view (View → Wide View). The column cap comes off; the side padding
+   stays, so text never runs into the window edge. */
+:root[data-wide="1"] .markdown-body {
+  max-width: none;
+}
+
 /* ------------------------------------------------------------------ headings */
 
 .markdown-body h1,

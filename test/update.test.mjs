@@ -384,3 +384,26 @@ describe("table of contents preference", () => {
     assert.equal(prefs.tocEnabled(), false);
   });
 });
+
+describe("wide view preference", () => {
+  test("is off until asked for, then persists", () => {
+    localStorage.clear();
+    assert.equal(prefs.wideEnabled(), false);
+    prefs.setWideEnabled(true);
+    assert.equal(prefs.wideEnabled(), true);
+    prefs.setWideEnabled(false);
+    assert.equal(prefs.wideEnabled(), false);
+  });
+
+  test("mirrors the setting onto the root element for the stylesheet", () => {
+    localStorage.clear();
+    prefs.applyWide();
+    assert.equal(document.documentElement.dataset.wide, "0");
+
+    prefs.setWideEnabled(true);
+    assert.equal(document.documentElement.dataset.wide, "1");
+
+    prefs.setWideEnabled(false);
+    assert.equal(document.documentElement.dataset.wide, "0");
+  });
+});
