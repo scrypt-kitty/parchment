@@ -94,8 +94,31 @@ jobs:
             | Windows | `*_x64-setup.exe` (installer) or `*_x64_en-US.msi` |
             | Linux | `*_amd64.AppImage` (portable) or `*_amd64.deb` |
 
-            These builds are **unsigned**. macOS and Windows will warn on first
-            launch; the README explains how to get past it in one step.
+            ### First launch
+
+            These builds are **unsigned**, so each platform needs one extra step
+            the first time:
+
+            - **macOS** — the first launch is refused as being from an
+              unidentified developer. Move Parchment to `/Applications`, then
+              clear the quarantine flag:
+
+              ```sh
+              xattr -dr com.apple.quarantine /Applications/Parchment.app
+              ```
+
+              or right-click the app and choose *Open*. (`brew install --cask
+              scrypt-kitty/tap/parchment` followed by the same `xattr` command
+              works too.)
+            - **Windows** — SmartScreen shows a blue "Windows protected your PC"
+              panel. Click *More info*, then *Run anyway*.
+            - **Linux** — mark the AppImage executable first:
+
+              ```sh
+              chmod +x parchment_*_amd64.AppImage
+              ```
+
+            The README has the same steps.
 
             ### Verifying your download
 
