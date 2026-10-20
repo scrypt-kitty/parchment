@@ -13,6 +13,15 @@ const DEFAULT_STEP = ZOOM_STEPS.indexOf(1);
 let zoomStep = clampStep(Number(localStorage.getItem(ZOOM_KEY) ?? DEFAULT_STEP));
 let theme = (localStorage.getItem(THEME_KEY) as Theme | null) ?? "system";
 
+/** Re-reads the cached values after another window changed them, then repaints. */
+export function syncFromStorage(): void {
+  zoomStep = clampStep(Number(localStorage.getItem(ZOOM_KEY) ?? DEFAULT_STEP));
+  theme = (localStorage.getItem(THEME_KEY) as Theme | null) ?? "system";
+  applyZoom();
+  applyTheme();
+  applyWide();
+}
+
 function clampStep(value: number): number {
   if (!Number.isFinite(value)) return DEFAULT_STEP;
   return Math.min(ZOOM_STEPS.length - 1, Math.max(0, Math.round(value)));

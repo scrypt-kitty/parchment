@@ -58,6 +58,27 @@ static JSON. That the plugin then honours it is not observable without a window.
 - [ ] Print (<kbd>⌘P</kbd>) — the preview shows the document at full width with
       no chrome, no copy buttons.
 
+### Multiple windows
+
+Each document gets its own window. Needs a real OS to check.
+
+- [ ] Open a file, then File > Open a second. A **new window** appears; the first
+      is untouched.
+- [ ] Open the same file again (dialog, Open Recent, or double-click in the file
+      manager). The window that has it is **focused**, no duplicate.
+- [ ] Select several `.md` files in the file manager and Open With Parchment.
+      Each gets a window.
+- [ ] Drop two files on one window. Each gets a window.
+- [ ] With two windows open, edit each file on disk. Only the matching window
+      reloads. Images in each resolve (the image scope is per window).
+- [ ] Menu commands (Reload, Find, Print, zoom) act on the focused window only.
+- [ ] Change zoom or theme in one window. The others follow.
+- [ ] Close one window: the rest stay open. Close the last (Windows/Linux): the
+      app quits.
+- [ ] With an installed release running, launch a dev build (`npm start`). It
+      opens its own window titled "(dev)" and does **not** hand off to the
+      release.
+
 ### Live reload
 
 - [ ] Open a document, edit it in another editor, save. The view updates, scroll

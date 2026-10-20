@@ -107,3 +107,26 @@ describe("opener capability scope", () => {
     }
   });
 });
+
+describe("multi-window scope", () => {
+  test("capability covers every window the app can create", () => {
+    // Windows after the first are labelled doc-<n> in lib.rs. A window outside
+    // the capability gets no IPC at all: it opens blank and never loads a file.
+    assert.ok(capability.windows.includes("main"));
+    assert.ok(capability.windows.includes("doc-*"));
+    assert.match(read("src-tauri/src/lib.rs"), /const WINDOW_PREFIX: &str = "doc-";/);
+  });
+
+  test("a dev build cannot collide with an installed release", () => {
+    // The single-instance lock and the webview data directory are both keyed on
+    // the identifier. Sharing it would make a dev launch hand its files to the
+    // installed app and read its preferences.
+    const prod = JSON.parse(read("src-tauri/tauri.conf.json"));
+    const dev = JSON.parse(read("src-tauri/tauri.dev.conf.json"));
+    assert.notEqual(dev.identifier, prod.identifier);
+    assert.match(dev.version, /^\d+\.\d+\.\d+-dev$/, "dev builds must be visibly not a release");
+    assert.equal(dev.app.windows[0].label, "main");
+    assert.equal(dev.app.windows[0].width, prod.app.windows[0].width);
+    assert.match(read("package.json"), /"start": "tauri dev --config src-tauri\/tauri\.dev\.conf\.json"/);
+  });
+});

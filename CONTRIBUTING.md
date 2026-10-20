@@ -11,6 +11,8 @@ On Linux you also need `libwebkit2gtk-4.1-dev` and `libgtk-3-dev`.
 ```sh
 npm install
 npm start          # run the app in development
+                   # (uses its own app identifier, "Parchment Dev", so it runs
+                   # alongside an installed release instead of handing it files)
 npm run validate   # everything CI will check
 ```
 

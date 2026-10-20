@@ -1,4 +1,4 @@
-//! Live reload. Watches the open document and tells the webview to re-read it
+//! Live reload. Each window watches its own document and tells its webview to re-read it
 //! when something on disk changes.
 //!
 //! The *parent directory* is watched rather than the file itself: most editors
@@ -24,7 +24,7 @@ pub struct Watch {
 
 impl Watch {
     /// Point the watcher at `file`, replacing whatever it was watching before.
-    pub fn watch(&mut self, app: AppHandle, file: &Path) {
+    pub fn watch(&mut self, app: AppHandle, label: &str, file: &Path) {
         if self.target.as_deref() == Some(file) {
             return;
         }
@@ -46,6 +46,7 @@ impl Watch {
         }
 
         let target = file.to_path_buf();
+        let label = label.to_owned();
         std::thread::spawn(move || {
             let mut last = Instant::now() - DEBOUNCE;
             for event in rx {
@@ -67,7 +68,8 @@ impl Watch {
                 // A rename-over-original briefly leaves nothing at the path.
                 std::thread::sleep(Duration::from_millis(30));
                 if target.exists() {
-                    let _ = app.emit("document-changed", target.to_string_lossy());
+                    let _ =
+                        app.emit_to(label.as_str(), "document-changed", target.to_string_lossy());
                 }
             }
         });

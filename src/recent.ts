@@ -4,7 +4,7 @@
  *  other preferences, so it never leaves the machine.
  */
 
-const KEY = "parchment.recent";
+export const KEY = "parchment.recent";
 const LIMIT = 12;
 
 export interface RecentFile {

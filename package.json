@@ -21,7 +21,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "start": "tauri dev",
+    "start": "tauri dev --config src-tauri/tauri.dev.conf.json",
     "bundle": "tauri build",
     "test": "node test/index.mjs",
     "test:coverage": "c8 --reporter=text --reporter=lcov --include='src/**' --check-coverage --lines 90 --functions 90 --branches 80 node test/index.mjs",

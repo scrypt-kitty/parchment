@@ -20,6 +20,7 @@ cd "$(dirname "$0")/.."
 
 pkg=$(node -p "require('./package.json').version")
 conf=$(node -p "require('./src-tauri/tauri.conf.json').version")
+dev=$(node -p "require('./src-tauri/tauri.dev.conf.json').version")
 
 # Only the version inside [package] — a bare grep would also match a dependency
 # pinned to the same string.
@@ -53,6 +54,7 @@ printf 'package.json       %s\n' "$pkg"
 printf 'tauri.conf.json    %s\n' "$conf"
 printf 'Cargo.toml         %s\n' "$cargo"
 printf 'Cargo.lock         %s\n' "$lock"
+printf 'tauri.dev.conf     %s\n' "$dev"
 
 fail=0
 for value in "$conf" "$cargo" "$lock"; do
@@ -60,9 +62,12 @@ for value in "$conf" "$cargo" "$lock"; do
   [ "$value" = "$pkg" ] || fail=1
 done
 
+# The dev build is the release version plus "-dev", so it never reads as a release.
+[ "$dev" = "$pkg-dev" ] || fail=1
+
 if [ "$fail" -ne 0 ]; then
   echo
-  echo "error: version mismatch across the four files above." >&2
+  echo "error: version mismatch across the files above." >&2
   echo "Run the bump-version workflow rather than editing them by hand." >&2
   exit 1
 fi
