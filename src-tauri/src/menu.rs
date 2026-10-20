@@ -1,6 +1,7 @@
-//! Native menu bar. Every custom item just forwards its id to the webview as a
-//! `menu-action` event; all behaviour lives in the frontend so there is one
-//! place to look for what a command does.
+//! Native menu bar. Every custom item just forwards its id to the focused
+//! window's webview as a `menu-action` event (wired up in `lib.rs`); all
+//! behaviour lives in the frontend so there is one place to look for what a
+//! command does.
 //!
 //! The menu is rebuilt wholesale whenever the recent-files list or the
 //! auto-update toggle changes. Holding on to individual item handles would mean
@@ -11,7 +12,7 @@ use tauri::menu::{
     AboutMetadata, CheckMenuItemBuilder, MenuBuilder, MenuItemBuilder, PredefinedMenuItem,
     SubmenuBuilder,
 };
-use tauri::{AppHandle, Emitter, Runtime};
+use tauri::{AppHandle, Runtime};
 
 use crate::RecentFile;
 
@@ -113,7 +114,8 @@ pub fn install<R: Runtime>(
 
     let about = |extended: bool| AboutMetadata {
         name: Some("Parchment".into()),
-        version: Some(env!("CARGO_PKG_VERSION").into()),
+        // The running app's version, so a dev build's config override shows.
+        version: Some(app.package_info().version.to_string()),
         comments: extended.then(|| "A fast, private, open-source Markdown viewer.".into()),
         license: Some("GPL-3.0-or-later".into()),
         website: Some(env!("CARGO_PKG_REPOSITORY").into()),
@@ -170,10 +172,6 @@ pub fn install<R: Runtime>(
     let menu = menu.item(&help);
 
     app.set_menu(menu.build()?)?;
-
-    app.on_menu_event(|app, event| {
-        let _ = app.emit("menu-action", event.id().0.as_str());
-    });
 
     Ok(())
 }

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Parchment Dev",
+  "version": "1.2.0-dev",
+  "identifier": "io.parchment.viewer.dev",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Parchment (dev)",
+        "width": 1000,
+        "height": 760,
+        "minWidth": 420,
+        "minHeight": 320,
+        "resizable": true,
+        "center": true,
+        "visible": false,
+        "dragDropEnabled": true
+      }
+    ]
+  }
+}

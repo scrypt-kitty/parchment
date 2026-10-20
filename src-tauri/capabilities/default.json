@@ -3,7 +3,8 @@
   "identifier": "default",
   "description": "Everything the viewer window is allowed to do. Deliberately minimal: no filesystem plugin, no HTTP plugin, no shell. The only network access is the webview's own fetch to api.github.com, allowed by the CSP in tauri.conf.json rather than by a capability.",
   "windows": [
-    "main"
+    "main",
+    "doc-*"
   ],
   "permissions": [
     "core:default",

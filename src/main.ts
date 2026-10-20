@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { open as openDialog, save as saveDialog } from "@tauri-apps/plugin-dialog";
 import { openUrl } from "@tauri-apps/plugin-opener";
@@ -36,6 +36,20 @@ const MARKDOWN_EXTENSIONS = ["md", "markdown", "mdown", "mkd", "mdx", "txt"];
 
 let currentPath: string | null = null;
 
+/** Dev builds say so in the title bar, so they are not mistaken for the
+ *  installed app when both are open. */
+const TITLE_SUFFIX = import.meta.env.DEV ? " (dev)" : "";
+
+/**
+ * Open a document the way a user asked for it. Rust decides which window shows
+ * it: one that already has it open is focused, an empty one takes it, otherwise
+ * a new window is created. Anything that only reloads the current document
+ * calls `openPath` directly.
+ */
+function requestOpen(path: string): Promise<void> {
+  return invoke("open_in_window", { path });
+}
+
 /* ---------------------------------------------------------------- documents */
 
 async function openPath(path: string, preserveScroll = false): Promise<void> {
@@ -63,7 +77,7 @@ async function openPath(path: string, preserveScroll = false): Promise<void> {
   doc.hidden = false;
 
   currentPath = payload.path;
-  await getCurrentWindow().setTitle(payload.name);
+  await getCurrentWindow().setTitle(payload.name + TITLE_SUFFIX);
   await syncRecent(recent.remember(payload.path, payload.name));
   toc.build(headings, scroller);
 
@@ -93,7 +107,7 @@ function clearError(): void {
 
 /** Keeps the native Open Recent submenu in step with the stored list. */
 async function syncRecent(entries: recent.RecentFile[]): Promise<void> {
-  recent.render(recentList, (path) => void openPath(path));
+  recent.render(recentList, (path) => void requestOpen(path));
   await invoke("set_recent_files", {
     files: entries.map((entry) => ({ path: entry.path, name: entry.name })),
   }).catch(() => undefined);
@@ -139,7 +153,7 @@ async function pickFile(): Promise<void> {
     directory: false,
     filters: [{ name: "Markdown", extensions: MARKDOWN_EXTENSIONS }],
   });
-  if (typeof selected === "string") await openPath(selected);
+  if (typeof selected === "string") await requestOpen(selected);
 }
 
 function looksLikeMarkdown(path: string): boolean {
@@ -247,7 +261,7 @@ document.getElementById("reload-dismiss")!.addEventListener("click", hideReloadB
 
 async function handleMenu(action: string): Promise<void> {
   if (action.startsWith("recent:")) {
-    await openPath(action.slice("recent:".length));
+    await requestOpen(action.slice("recent:".length));
     return;
   }
 
@@ -347,7 +361,7 @@ doc.addEventListener("click", async (event) => {
   const relative = link.getAttribute("data-relative");
   if (relative) {
     // A link to a sibling Markdown file opens in-app; anything else goes to the OS.
-    if (looksLikeMarkdown(relative)) await openPath(relative);
+    if (looksLikeMarkdown(relative)) await requestOpen(relative);
     else await openUrl(`file://${relative}`).catch(() => undefined);
     return;
   }
@@ -385,12 +399,29 @@ async function initDragDrop(): Promise<void> {
       dropOverlay.hidden = false;
     } else if (event.payload.type === "drop") {
       dropOverlay.hidden = true;
-      const file = event.payload.paths.find(looksLikeMarkdown) ?? event.payload.paths[0];
-      if (file) void openPath(file);
+      // Every dropped Markdown file gets a window; if none are Markdown, the
+      // first thing dropped is tried anyway so the error is visible.
+      const markdown = event.payload.paths.filter(looksLikeMarkdown);
+      const files = markdown.length ? markdown : event.payload.paths.slice(0, 1);
+      for (const file of files) void requestOpen(file);
     } else {
       dropOverlay.hidden = true;
     }
   });
+}
+
+/* ------------------------------------------------------- cross-window storage */
+
+/** Windows share one localStorage. The browser fires `storage` in every window
+ *  except the one that wrote, which is exactly the set that needs to catch up. */
+function onSharedStorage(event: StorageEvent): void {
+  if (event.key === null || event.key.startsWith("parchment.")) {
+    prefs.syncFromStorage();
+    toc.setVisible(prefs.tocEnabled());
+  }
+  if (event.key === null || event.key === recent.KEY) {
+    recent.render(recentList, (path) => void requestOpen(path));
+  }
 }
 
 /* ---------------------------------------------------------------- bootstrap */
@@ -401,11 +432,15 @@ async function main(): Promise<void> {
   prefs.applyWide();
   toc.setVisible(prefs.tocEnabled());
 
-  await listen<string>("menu-action", (event) => void handleMenu(event.payload));
-  await listen<string>("open-file", (event) => void openPath(event.payload));
-  await listen<string>("document-changed", (event) => {
+  // Rust targets these at one window by label, so listen on this window rather
+  // than globally: other windows' menu commands and file changes never arrive.
+  const me = getCurrentWebviewWindow();
+  await me.listen<string>("menu-action", (event) => void handleMenu(event.payload));
+  await me.listen<string>("open-file", (event) => void openPath(event.payload));
+  await me.listen<string>("document-changed", (event) => {
     void handleDocumentChanged(event.payload);
   });
+  window.addEventListener("storage", onSharedStorage);
 
   await initDragDrop();
 
@@ -421,8 +456,8 @@ async function main(): Promise<void> {
   await getCurrentWindow().show();
 
   // After the window is up, so a slow or unreachable network never delays the
-  // first paint.
-  void runUpdateCheck(false);
+  // first paint. Once per launch, from the first window only.
+  if (getCurrentWindow().label === "main") void runUpdateCheck(false);
 }
 
 void main();

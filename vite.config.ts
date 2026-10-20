@@ -7,6 +7,9 @@ export default defineConfig({
   server: {
     port: 5183,
     strictPort: true,
+    // Cargo owns src-tauri; watching its build output crashes Vite on Windows
+    // when a DLL is locked mid-link.
+    watch: { ignored: ["**/src-tauri/**"] },
   },
   build: {
     // Safari 13 is the floor for the WKWebView on macOS 11, our minimum target.

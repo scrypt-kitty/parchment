@@ -3,8 +3,8 @@
 //!
 //! Tauri's built-in asset protocol is scoped through config globs, which would
 //! have to be widened to "anywhere the user might keep a file". This protocol
-//! instead resolves every request against the directory of the document that is
-//! currently open and refuses anything that escapes it, so a document can only
+//! instead resolves every request against the directory of the document open in
+//! the requesting window and refuses anything that escapes it, so a document can only
 //! ever reach its own neighbours.
 
 use std::path::{Path, PathBuf};
@@ -19,7 +19,7 @@ pub fn serve<R: tauri::Runtime>(
     ctx: UriSchemeContext<'_, R>,
     request: Request<Vec<u8>>,
 ) -> Response<Vec<u8>> {
-    match resolve(ctx.app_handle(), request.uri().path()) {
+    match resolve(ctx.app_handle(), ctx.webview_label(), request.uri().path()) {
         Some(path) => match std::fs::read(&path) {
             Ok(bytes) => Response::builder()
                 .status(StatusCode::OK)
@@ -37,7 +37,11 @@ pub fn serve<R: tauri::Runtime>(
 /// Returns the file only when it genuinely sits inside the open document's
 /// directory. Both sides are canonicalized first so `../` and symlinks cannot
 /// be used to climb out.
-fn resolve<R: tauri::Runtime>(app: &tauri::AppHandle<R>, uri_path: &str) -> Option<PathBuf> {
+fn resolve<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    label: &str,
+    uri_path: &str,
+) -> Option<PathBuf> {
     let decoded = percent_decode_str(uri_path.trim_start_matches('/'))
         .decode_utf8()
         .ok()?;
@@ -52,10 +56,7 @@ fn resolve<R: tauri::Runtime>(app: &tauri::AppHandle<R>, uri_path: &str) -> Opti
 
     let root = app
         .state::<AppState>()
-        .doc_dir
-        .lock()
-        .ok()?
-        .clone()?
+        .doc_dir_for(label)?
         .canonicalize()
         .ok()?;
 

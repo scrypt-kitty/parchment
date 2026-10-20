@@ -64,6 +64,11 @@ jobs:
               json.version = process.argv[1];
               fs.writeFileSync(file, JSON.stringify(json, null, 2) + '\n');
             }
+            // The dev build carries the same version marked as not-a-release.
+            const dev = 'src-tauri/tauri.dev.conf.json';
+            const devJson = JSON.parse(fs.readFileSync(dev, 'utf8'));
+            devJson.version = process.argv[1] + '-dev';
+            fs.writeFileSync(dev, JSON.stringify(devJson, null, 2) + '\n');
           " "$next"
 
           # Only the [package] version, not any dependency pinned to the same string.
@@ -96,7 +101,8 @@ jobs:
           body: |
             Version bump ${{ steps.version.outputs.current }} → **${{ steps.version.outputs.next }}**,
             applied across `package.json`, `src-tauri/tauri.conf.json`,
-            `src-tauri/Cargo.toml`, and `Cargo.lock`.
+            `src-tauri/Cargo.toml`, and `Cargo.lock` (and the `-dev` marker in
+            `src-tauri/tauri.dev.conf.json`).
 
             If this PR shows no checks, close and reopen it once — see the
             comment in the workflow for why, and how to avoid it.
